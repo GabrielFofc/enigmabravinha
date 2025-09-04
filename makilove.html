@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini Cookie Clicker</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #3a0ca3, #7209b7, #f72585);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    h1 {
+      margin: 20px 0;
+      font-size: 3rem;
+      text-shadow: 2px 2px 15px rgba(0,0,0,0.5);
+      animation: glowTitle 2s ease-in-out infinite alternate;
+    }
+    @keyframes glowTitle {
+      0% { text-shadow: 2px 2px 10px rgba(0,0,0,0.5), 0 0 10px #fff; }
+      100% { text-shadow: 2px 2px 15px rgba(0,0,0,0.7), 0 0 25px #fff; }
+    }
+
+    /* Cookie */
+    #cookie {
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #f0c27b, #d69d4f);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 5rem;
+      cursor: pointer;
+      margin: 20px 0;
+      box-shadow: 0 15px 50px rgba(0,0,0,0.7), 0 0 30px rgba(255,255,255,0.2);
+      transition: transform 0.1s, box-shadow 0.2s;
+    }
+    #cookie:active { transform: scale(0.9) rotate(-5deg); }
+
+    /* Stats */
+    .stats {
+      background: rgba(255,255,255,0.1);
+      padding: 20px 50px;
+      border-radius: 25px;
+      margin: 20px 0;
+      font-size: 1.4rem;
+      backdrop-filter: blur(12px);
+      box-shadow: inset 0 0 10px rgba(255,255,255,0.2), 0 10px 25px rgba(0,0,0,0.5);
+      text-align: center;
+      transition: background 0.3s;
+    }
+
+    /* Shop */
+    .shop {
+      width: 100%;
+      max-width: 480px;
+      background: rgba(255,255,255,0.05);
+      padding: 25px;
+      border-radius: 25px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      margin-bottom: 20px;
+      backdrop-filter: blur(12px);
+    }
+    .shop h2 { margin-bottom: 20px; text-align: center; font-size: 2rem; }
+    .upgrade {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(145deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 15px;
+      margin: 12px 0;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    }
+    .upgrade:hover { transform: scale(1.05); background: linear-gradient(145deg, rgba(255,255,255,0.25), rgba(255,255,255,0.1)); }
+    .upgrade.disabled { opacity: 0.5; pointer-events: none; }
+
+    /* Botão mágico */
+    #magicButton {
+      display: none;
+      padding: 20px 50px;
+      font-size: 2rem;
+      border-radius: 25px;
+      background: linear-gradient(45deg, #9b30ff, #7a1aff, #9b30ff);
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 10px #9b30ff, 0 0 20px #7a1aff, 0 5px 20px rgba(0,0,0,0.5);
+      margin-top: 25px;
+      animation: neonGlow 1s ease-in-out infinite alternate;
+      border: none;
+    }
+    #magicButton:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 20px #b565ff, 0 0 40px #9b30ff, 0 5px 20px rgba(0,0,0,0.5);
+    }
+    @keyframes neonGlow {
+      0% { box-shadow: 0 0 10px #9b30ff, 0 0 20px #7a1aff; }
+      100% { box-shadow: 0 0 30px #9b30ff, 0 0 50px #7a1aff; }
+    }
+
+    /* Botão dev */
+    #devButton {
+      padding: 8px 16px;
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      font-size: 1rem;
+      border-radius: 10px;
+      border: none;
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+      transition: all 0.3s;
+    }
+    #devButton:hover { background: rgba(255,255,255,0.4); }
+  </style>
+</head>
+<body>
+  <h1>🍪 Mini Cookie Clicker</h1>
+  <button id="devButton">Dev: Alterar Cookies</button>
+  <div id="cookie">🍪</div>
+  <div class="stats">
+    <p>Cookies: <span id="cookieCount">0</span></p>
+    <p>Cookies por segundo: <span id="cps">0</span></p>
+  </div>
+
+  <div class="shop">
+    <h2>Loja</h2>
+    <div id="cursor" class="upgrade">
+      <span>Comprar Cursor</span>
+      <span id="cursorCost">15</span>
+    </div>
+    <div id="grandma" class="upgrade">
+      <span>Comprar Vovó</span>
+      <span id="grandmaCost">100</span>
+    </div>
+  </div>
+
+  <button id="magicButton">clique</button>
+
+  <script>
+    document.body.insertAdjacentHTML("afterbegin", "<!-- oi -->");
+
+    let cookies = 0;
+    let cps = 0;
+    let cursorCost = 15;
+    let grandmaCost = 100;
+
+    const cookieEl = document.getElementById("cookie");
+    const cookieCountEl = document.getElementById("cookieCount");
+    const cpsEl = document.getElementById("cps");
+    const cursorEl = document.getElementById("cursor");
+    const grandmaEl = document.getElementById("grandma");
+    const cursorCostEl = document.getElementById("cursorCost");
+    const grandmaCostEl = document.getElementById("grandmaCost");
+    const magicButton = document.getElementById("magicButton");
+    const devButton = document.getElementById("devButton");
+
+    function updateDisplay() {
+      cookieCountEl.textContent = cookies;
+      cpsEl.textContent = cps;
+      cursorCostEl.textContent = cursorCost;
+      grandmaCostEl.textContent = grandmaCost;
+
+      cursorEl.classList.toggle("disabled", cookies < cursorCost);
+      grandmaEl.classList.toggle("disabled", cookies < grandmaCost);
+
+      if (cookies >= 1000) {
+        magicButton.style.display = "inline-block";
+      }
+    }
+
+    cookieEl.addEventListener("click", () => { cookies++; updateDisplay(); });
+    cursorEl.addEventListener("click", () => {
+      if (cookies >= cursorCost) { cookies -= cursorCost; cps += 1; cursorCost = Math.floor(cursorCost*1.5); updateDisplay(); }
+    });
+    grandmaEl.addEventListener("click", () => {
+      if (cookies >= grandmaCost) { cookies -= grandmaCost; cps += 5; grandmaCost = Math.floor(grandmaCost*1.5); updateDisplay(); }
+    });
+
+    // Botão mágico abre pop-up
+    magicButton.addEventListener("click", () => {
+      window.open("https://www.invertexto.com/?key=aUCSIbStymfEcLhr&id=220227", "_blank", "width=800,height=600");
+    });
+
+    // Botão Dev
+    devButton.addEventListener("click", () => {
+      let novo = prompt("Digite a nova quantidade de cookies:", cookies);
+      if (novo !== null) { cookies = parseInt(novo) || cookies; updateDisplay(); }
+    });
+
+    setInterval(() => { cookies += cps; updateDisplay(); }, 1000);
+    updateDisplay();
+  </script>
+</body>
+</html>
